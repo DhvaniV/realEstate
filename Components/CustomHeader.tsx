@@ -1,76 +1,37 @@
-// CustomButton.js
+import {View, Text, StyleSheet, SafeAreaView, Image} from 'react-native';
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, View, SafeAreaView, Image, Platform } from 'react-native';
-import { about, back } from '../Screens/assests';
-import { grey, headingTxt, primaryColor, white } from '../Screens/Colors';
-import { Scale } from './Scale';
+import {back} from '../Screens/assests';
+import {Scale} from './Scale';
+import {headingTxt} from '../Screens/Colors';
+import {TouchableOpacity} from 'react-native';
 
-const CustomHeader = ({ onPress, title, source, color, navigation } : any) => {
+const CustomHeader = ({onBack, about, title, navigation, onBackPress}: any) => {
   return (
-    <SafeAreaView style = {styles.header}>
-
-    <View style={[styles.button, {backgroundColor: color}]} onPress={onPress}>
-        <Image source={source}
-        style = {styles.image}/>
-      <Text style={styles.buttonText}>{title}</Text>
-      <TouchableOpacity
-      onPress={navigation}>
-      <Image
-       source={about}
-      style = {styles.about}
-      />
-      </TouchableOpacity>
-    </View>
+    <SafeAreaView>
+      <View style={styles.row}>
+        <TouchableOpacity onPress={onBackPress}>
+          <Image source={onBack} />
+        </TouchableOpacity>
+        <Text style={styles.headertext}>{title}</Text>
+        <TouchableOpacity onPress={navigation}>
+          <Image source={about} />
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  button: {
-    borderRadius: 5,
+  row: {
     flexDirection: 'row',
-    alignItems: 'center',
-    ...Platform.select({
-      ios: {
-        backgroundColor: white,
-        shadowColor: grey,
-        shadowOffset: {
-          width: 0,
-          height: 1,
-        },
-        shadowOpacity: 0.18,
-        shadowRadius: 1.0,
-        zIndex: 999,
-      },
-      android: {
-        backgroundColor: white,
-        shadowColor: grey,
-        shadowOffset: {
-          width: 0,
-          height: 1,
-        },
-        shadowOpacity: 0.18,
-        shadowRadius: 1.0,
-        elevation: 3,
-      },
-    }),
+    justifyContent: 'space-between',
+    marginHorizontal: Scale(10),
   },
-  buttonText: {
+  headertext: {
+    fontFamily: 'sans-serif',
+    fontSize: Scale(15),
     color: headingTxt,
-    fontSize: 20,
-    textAlign: 'center',
-    fontWeight: '700',
   },
-  header: {
-    justifyContent: 'center'
-  },
-  image: {
-    justifyContent: 'flex-start',
-    marginRight: '30%',
-  },
-  about: {
-    marginLeft: '50%'
-  }
 });
 
 export default CustomHeader;

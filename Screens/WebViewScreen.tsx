@@ -1,15 +1,15 @@
-import { View, Text, StyleSheet } from 'react-native'
-import React from 'react'
+import {View, Text, StyleSheet} from 'react-native';
+import React from 'react';
 import WebView from 'react-native-webview';
 
 const WebViewScreen = ({route}: any) => {
-    const { url } = route.params;
+  const {url} = route.params;
   return (
-    <View style = {styles.container}>
-      <WebView source={{ uri: url }} style={styles.webview} />
+    <View style={styles.container}>
+      <WebView source={{uri: url}} style={styles.webview} />
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -20,4 +20,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default WebViewScreen
+export default WebViewScreen;

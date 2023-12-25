@@ -11,36 +11,55 @@ import {
   Platform,
   TouchableOpacity,
   SafeAreaView,
+  TextInput,
+  Modal,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import axios from 'axios';
-import {Scale} from '../Components/Scale';
+import {Scale, screenHeight, screenWidth} from '../Components/Scale';
 import {
   backgroundColor,
   blue,
   grey,
   headingTxt,
+  light_grey,
+  lightest_grey,
   primaryColor,
   shadowColor,
   teal,
+  white,
   yellow,
 } from './Colors';
-import {back, bathroomIcon, bedIcon, heartIcon, redHeartIcon} from './assests';
+import {
+  about,
+  back,
+  bathroomIcon,
+  bedIcon,
+  heartIcon,
+  locationIcon,
+  redHeartIcon,
+  search,
+} from './assests';
 import CustomButton from '../Components/CustomHeader';
 import CustomHeader from '../Components/CustomHeader';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const screenWidth = Dimensions.get('window').width;
+import {houseList, listing} from '../Components/constants';
 
 const productList = ({navigation}: any) => {
   const [postData, setPostData] = useState<any[]>([]);
   const [likedPhotos, setLikedPhotos] = useState([]);
+  const [searchText, setsearchText] = useState('');
+  const [searchList, setSearchList] = useState<any[]>([]);
+  const [showList, setShowList] = useState(false);
+  const [finalList, setfinalList] = useState<any[]>([]);
+
+  //options for API call
   const options = {
     method: 'POST',
     url: 'https://realtor.p.rapidapi.com/properties/v3/list',
     headers: {
       'content-type': 'application/json',
-      'X-RapidAPI-Key': 'c83ad0c78cmshc4a5a6610e02f49p1fc659jsndc70c52ff8ab',
+      'X-RapidAPI-Key': '648e39489emsh5156d12b21156e2p1b6224jsn7c30748b9949',
       'X-RapidAPI-Host': 'realtor.p.rapidapi.com',
     },
     data: {
@@ -55,6 +74,7 @@ const productList = ({navigation}: any) => {
     },
   };
 
+  //Api call
   const makeApiCall = async () => {
     try {
       const response = await axios.request(options);
@@ -74,8 +94,9 @@ const productList = ({navigation}: any) => {
     navigation.navigate('ProductInfo', {propertyId: propertyId});
   };
 
+  //like functionality to like the house
   const handleLike = async (photoId: any) => {
-    const newArray = postData.map((obj: any) => {
+    const newArray = listing.map((obj: any) => {
       if (obj.property_id === photoId) {
         if (obj.isLiked) {
           const updatedArray = likedPhotos.filter(
@@ -95,6 +116,10 @@ const productList = ({navigation}: any) => {
 
   useEffect(() => {
     makeApiCall();
+    setSearchList(listing);
+    let list = listing.map(item => item.location?.address?.city);
+    setSearchList(list);
+    console.log('house listing:', listing);
   }, []);
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', async () => {
@@ -118,6 +143,7 @@ const productList = ({navigation}: any) => {
     return unsubscribe;
   }, [navigation]);
 
+  //House Listing View
   const renderItem = ({item}: any) => {
     return (
       <TouchableOpacity
@@ -130,30 +156,30 @@ const productList = ({navigation}: any) => {
             resizeMode="cover"
           />
           {item.flags.is_coming_soon ||
-          item.flags.is_new_construction ||
-          item.flags.is_new_listing ? (
-            <View
-              style={[
-                styles.textView,
-                {
-                  backgroundColor: item.flags.is_new_construction
-                    ? grey
-                    : item.flags.is_coming_soon
-                    ? yellow
-                    : blue,
-                },
-              ]}>
-              <Text style={styles.text}>
-                {item.flags.is_new_construction ? (
-                  <Text>New Construction</Text>
-                ) : item.flags.is_coming_soon ? (
-                  <Text>Coming Soon</Text>
-                ) : item.flags.is_new_listing ? (
-                  <Text>New</Text>
-                ) : null}
-              </Text>
-            </View>
-          ) : null}
+            item.flags.is_new_construction ||
+            (item.flags.is_new_listing && (
+              <View
+                style={[
+                  styles.textView,
+                  {
+                    backgroundColor: item.flags.is_new_construction
+                      ? grey
+                      : item.flags.is_coming_soon
+                      ? yellow
+                      : blue,
+                  },
+                ]}>
+                <Text style={styles.text}>
+                  {item.flags.is_new_construction ? (
+                    <Text>New Construction</Text>
+                  ) : item.flags.is_coming_soon ? (
+                    <Text>Coming Soon</Text>
+                  ) : item.flags.is_new_listing ? (
+                    <Text>New</Text>
+                  ) : null}
+                </Text>
+              </View>
+            ))}
           <TouchableOpacity
             onPress={() => handleLike(item.property_id)}
             style={styles.heartIcon}>
@@ -183,88 +209,134 @@ const productList = ({navigation}: any) => {
               <Text style={styles.houseType}>House for sale</Text>
             )}
           </View>
-          <Text style={styles.priceText}>${item.list_price}</Text>
-          <View style={styles.homeDesc}>
-            {item.description.beds ? (
-              <View style={styles.horizontal}>
-                <Text style={styles.data}>{item.description.beds}</Text>
-                <Image source={bedIcon} />
-              </View>
-            ) : (
-              <></>
-            )}
+          <View style={styles.map}>
+            <Image source={locationIcon} />
+            <Text style={styles.location_txt}>
+              {item.location.address.city} {item.location.address.state}
+            </Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.priceText}>${item.list_price}</Text>
+            <View style={styles.homeDesc}>
+              {item.description.beds && (
+                <View style={styles.horizontal}>
+                  <Text style={styles.data}>{item.description.beds}</Text>
+                  <Image source={bedIcon} />
+                </View>
+              )}
 
-            {item.description.baths ? (
-              <View style={styles.horizontal}>
-                <Text style={styles.data}>{item.description.baths}</Text>
-                <Image source={bathroomIcon} />
-              </View>
-            ) : (
-              <></>
-            )}
-
-            {item.description.sqft ? (
-              <View style={styles.horizontal}>
-                <Text style={styles.data}>{item.description.sqft}</Text>
-                <Text style={styles.headingTxt}>sqft</Text>
-              </View>
-            ) : (
-              <></>
-            )}
-
-            {item.description.lot_sqft ? (
-              <View style={styles.horizontal}>
-                <Text style={styles.data}>{item.description.lot_sqft}</Text>
-                <Text style={styles.headingTxt}>sqft lot</Text>
-              </View>
-            ) : (
-              <></>
-            )}
+              {item.description.baths && (
+                <View style={styles.horizontal}>
+                  <Text style={styles.data}>{item.description.baths}</Text>
+                  <Image source={bathroomIcon} />
+                </View>
+              )}
+            </View>
           </View>
         </View>
       </TouchableOpacity>
     );
   };
+
+  const handleSearch = (text: string) => {
+    console.log('test', text);
+    let finalArray = listing.filter(
+      item => item.location.address.city === text,
+    );
+    console.log('array', finalArray);
+    setfinalList(finalArray);
+    setShowList(false);
+  };
+
+  const listingSearchList = () => {
+    setShowList(true);
+  };
+
+  const searchListRender = ({item}: any) => {
+    return (
+      <TouchableOpacity style={styles.list} onPress={() => handleSearch(item)}>
+        <Text>{item}</Text>
+        <Image source={locationIcon} />
+      </TouchableOpacity>
+    );
+  };
+  const handleSearchList = text => {
+    setsearchText(text);
+    setShowList(true);
+
+    // Filter the data based on the search text
+    const filteredData = searchList.filter(item => item.includes(text));
+
+    console.log('filteredData', filteredData);
+    setSearchList(filteredData);
+    // Update the displayed data
+    // setData(filteredData);
+  };
   return (
     <>
-      <View style={styles.header}>
-        <CustomHeader
-          title={'House Listing'}
-          navigation={() => navigation.navigate('InfoApp')}
-          source={back}
-        />
-      </View>
+       <CustomHeader
+        title={'Home Listing'}
+        source={back}
+        onBackPress={() => navigation.goBack()}
+        onBack={back}
+      />
+
       <SafeAreaView style={styles.container}>
         {postData.length === 0 ? (
-          <ActivityIndicator size="large" color={teal} />
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={teal} />
+          </View>
         ) : (
           <View style={styles.top}>
+            <View style={styles.searchBarView}>
+              <Image source={search} />
+              <TextInput
+                style={styles.searchBar}
+                placeholder="Search..."
+                value={searchText}
+                onChangeText={handleSearchList}
+                onFocus={() => listingSearchList()}
+              />
+            </View>
             <FlatList
-              data={postData}
+              data={finalList.length === 0 ? listing : finalList}
               renderItem={renderItem}
               showsVerticalScrollIndicator={false}
             />
           </View>
         )}
       </SafeAreaView>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showList}
+        onRequestClose={() => {
+          setShowList(false);
+        }}>
+        <View style={styles.centeredView}>
+          <FlatList data={searchList} renderItem={searchListRender} />
+        </View>
+      </Modal>
     </>
   );
 };
 const styles = StyleSheet.create({
-  header: {
-    marginBottom: Scale(10),
-  },
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+
     backgroundColor: backgroundColor,
   },
+  center: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
+  },
   image: {
-    height: Scale(150),
-    width: screenWidth * 0.9,
-    borderRadius: Scale(20),
+    height: screenHeight * 0.2,
+    width: screenWidth * 0.85,
+    borderRadius: Scale(15),
     position: 'relative',
+    margin: Scale(10),
   },
   productView: {
     borderRadius: Scale(20),
@@ -282,6 +354,7 @@ const styles = StyleSheet.create({
     marginBottom: Scale(25),
     backgroundColor: primaryColor,
     paddingBottom: Scale(20),
+    marginHorizontal: Scale(15),
   },
   houseType: {
     fontSize: Scale(12),
@@ -295,7 +368,6 @@ const styles = StyleSheet.create({
   typeView: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: Scale(5),
   },
   circleYellow: {
     width: Scale(10),
@@ -318,8 +390,8 @@ const styles = StyleSheet.create({
     paddingVertical: Scale(2),
     paddingHorizontal: Scale(5),
     position: 'absolute',
-    top: 10,
-    left: 10,
+    top: 20,
+    left: 20,
   },
   priceText: {
     fontFamily: 'sans-serif',
@@ -337,6 +409,8 @@ const styles = StyleSheet.create({
     fontSize: Scale(12),
     fontWeight: '500',
     marginTop: Scale(5),
+    marginLeft: Scale(5),
+    marginRight: Scale(3),
   },
   headingTxt: {
     marginTop: Scale(3),
@@ -348,11 +422,56 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   heartIcon: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'flex-end',
-    alignItems: 'flex-end',
-    padding: 16,
+    alignSelf: 'flex-end',
+    position: 'absolute',
+    bottom: Scale(15),
+    right: Scale(20),
+    marginStart: Scale(15),
   },
-  top: {marginTop: Scale(20)},
+  top: {marginTop: Scale(10)},
+  map: {
+    flexDirection: 'row',
+    marginTop: Scale(10),
+    marginLeft: Scale(-5),
+    alignItems: 'center',
+  },
+  location_txt: {
+    fontFamily: 'sans-serif',
+    fontSize: Scale(12),
+    fontWeight: '300',
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  searchBar: {
+    height: 40,
+    marginLeft: Scale(10),
+  },
+  searchBarView: {
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 16,
+    paddingHorizontal: 10,
+    marginHorizontal: Scale(15),
+    borderRadius: Scale(15),
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  centeredView: {
+    marginTop: screenHeight * 0.17,
+    backgroundColor: white,
+    marginHorizontal: Scale(30),
+    borderRadius: Scale(10),
+  },
+  list: {
+    borderBottomColor: light_grey,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    marginTop: Scale(15),
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: Scale(20),
+  },
 });
 export default productList;

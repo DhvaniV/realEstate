@@ -8,37 +8,24 @@ import ProductInfo from './Screens/ProductInfo';
 import Schools from './Screens/Schools';
 import About from './Screens/About';
 import ImagesView from './Screens/ImagesView';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Info from './Screens/Info'
 import InfoApp from './Screens/InfoApp';
 
 const Stack = createStackNavigator();
-const Tab = createBottomTabNavigator();
-
-
-const TabNavigator = () => {
-  return (
-    <Tab.Navigator>
-      <Tab.Screen name="Info" component={Info} />
-      <Tab.Screen name="Schools" component={Schools} />
-    </Tab.Navigator>
-  );
-};
 
 const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-
-        <Stack.Screen name="productList" component={productList} 
-        options={{ headerShown: false }}/>
+      <Stack.Screen name="InfoApp" component={InfoApp} options={{ headerShown: false }} />
+        <Stack.Screen name="productList" component={productList}
+          options={{ headerShown: false }} />
         <Stack.Screen name="ProductInfo" component={ProductInfo}
-        options={{ headerShown: false }}/>
+          options={{ headerShown: false }} />
         <Stack.Screen name="WebView" component={WebViewScreen} />
-        <Stack.Screen name="About" component={About}  options={{ headerShown: false }}/>
+        <Stack.Screen name="About" component={About} options={{ headerShown: false }} />
         <Stack.Screen name="ImagesView" component={ImagesView}
-           options={{ headerShown: false }} />
-            <Stack.Screen name="InfoApp" component={InfoApp}  options={{ headerShown: false }}/>
+          options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   )

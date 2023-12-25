@@ -10,40 +10,42 @@ import React from 'react';
 import {backgroundColor, shadowColor, teal, white} from './Colors';
 import CustomHeader from '../Components/CustomHeader';
 import {back} from './assests';
-import {Scale} from '../Components/Scale';
+import {Scale, screenHeight} from '../Components/Scale';
 import {TouchableOpacity} from 'react-native';
 const screenWidth = Dimensions.get('window').width;
 
-const InfoApp = () => {
+const InfoApp = ({navigation}: any) => {
   return (
-    <SafeAreaView style={styles.container}>
-      <CustomHeader title={'About App'} source={back} />
-
+    <View style={styles.container}>
       <View>
         <View style={styles.center}>
           <Image
             source={{
               uri: 'https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg',
             }}
-            height={200}
-            width={screenWidth * 0.7}
+            height={screenHeight * 0.55}
+            width={screenWidth}
           />
         </View>
-        <Text style={styles.description}>Desription:-</Text>
+        <Text style={styles.description}>
+          Choose your dream house from your App
+        </Text>
 
         <Text style={styles.desc_text}>
           A good description should be a narrative. It should tell the story of
           your property. It should focus on the emotions that the property and
-          its amenities evoke. This is where you can describe the style of the
-          property, the history of those who have operated there, and the
-          importance of its place in the neighborhood.
+          its amenities evoke.
         </Text>
       </View>
-
-      <TouchableOpacity style={styles.bottom}>
-        <Text style={styles.text}>InfoApp</Text>
-      </TouchableOpacity>
-    </SafeAreaView>
+      <View style={styles.bottom_View}>
+        <TouchableOpacity
+          style={styles.bottom}
+          onPress={() => navigation.navigate('productList')}>
+          <Text style={styles.text}>Register Now</Text>
+        </TouchableOpacity>
+        <Text style={styles.loginTxt}>Already have an account? Login In</Text>
+      </View>
+    </View>
   );
 };
 
@@ -57,15 +59,12 @@ const styles = StyleSheet.create({
     borderRadius: Scale(12),
     alignItems: 'center',
     backgroundColor: teal,
-    position: 'absolute',
-    bottom: 20,
-    left: 10,
-    right: 10,
+    marginHorizontal: Scale(15),
+    marginTop: Scale(25),
   },
   center: {
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: Scale(10),
   },
   text: {
     fontSize: Scale(15),
@@ -74,11 +73,12 @@ const styles = StyleSheet.create({
     color: white,
   },
   description: {
-    fontSize: Scale(15),
-    fontWeight: '500',
+    fontSize: Scale(18),
+    fontWeight: '700',
     fontFamily: 'sans-serif',
     marginTop: Scale(20),
-    marginHorizontal: Scale(15),
+    marginHorizontal: Scale(25),
+    textAlign: 'center',
   },
   desc_text: {
     fontFamily: 'sans-serif',
@@ -87,6 +87,16 @@ const styles = StyleSheet.create({
     color: shadowColor,
     marginHorizontal: Scale(20),
     marginTop: Scale(10),
+    textAlign: 'center',
+  },
+  loginTxt: {
+    textAlign: 'center',
+    marginTop: Scale(15),
+  },
+  bottom_View: {
+    justifyContent: 'flex-end',
+    flex: 1,
+    marginBottom: Scale(20),
   },
 });
 export default InfoApp;

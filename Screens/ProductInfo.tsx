@@ -8,30 +8,36 @@ import {
   ActivityIndicator,
   FlatList,
   SafeAreaView,
+  Modal,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import axios from 'axios';
 import Carousel from 'react-native-snap-carousel';
 import PaginationDot from 'react-native-animated-pagination-dot';
-import {Scale} from '../Components/Scale';
+import {Scale, screenHeight} from '../Components/Scale';
 import {
   backgroundColor,
   black,
   blue,
   grey,
   headingTxt,
+  light_grey,
   primaryColor,
   shadowColor,
+  teal,
   white,
   yellow,
 } from './Colors';
 import {
+  about,
   back,
   bathroomIcon,
   bedIcon,
   built,
   heartIcon,
   infoIcon,
+  locationIcon,
+  menu,
   redHeartIcon,
   shareIcon,
 } from './assests';
@@ -54,6 +60,7 @@ const ProductInfo = ({route, navigation}: any) => {
   const [likedPhotos, setLikedPhotos] = useState([]);
   const [loader, setLoader] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
+  const [modal, setModal] = useState(false);
 
   const makeApiCall = async (id: any) => {
     setLoader(true);
@@ -62,11 +69,11 @@ const ProductInfo = ({route, navigation}: any) => {
         method: 'GET',
         url: 'https://realtor.p.rapidapi.com/properties/v3/detail',
         params: {
-          property_id: id,
+          property_id: '9796455368',
         },
         headers: {
           'X-RapidAPI-Key':
-            'c83ad0c78cmshc4a5a6610e02f49p1fc659jsndc70c52ff8ab',
+            '648e39489emsh5156d12b21156e2p1b6224jsn7c30748b9949',
           'X-RapidAPI-Host': 'realtor.p.rapidapi.com',
         },
       });
@@ -130,8 +137,10 @@ const ProductInfo = ({route, navigation}: any) => {
     return (
       <View style={styles.image}>
         <Image source={{uri: item}} style={styles.image} />
-        <TouchableOpacity style={styles.textView}>
-          <Text style={styles.text}>new</Text>
+        <TouchableOpacity
+          onPress={() => setModal(true)}
+          style={styles.textView}>
+          <Image source={menu} />
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => handleLike(item.property_id)}
@@ -219,6 +228,7 @@ const ProductInfo = ({route, navigation}: any) => {
     } else {
       setPhotos(postData);
     }
+    setModal(false);
     navigation.navigate('ImagesView', {photos: photos});
   };
 
@@ -231,24 +241,31 @@ const ProductInfo = ({route, navigation}: any) => {
       </TouchableOpacity>
     );
   };
-
+  const NUM_OF_LINES = 5;
+  const [showMore, setShowMore] = useState(false);
   useEffect(() => {
     let product_id = route.params.propertyId;
     setPropertyID(route.params.propertyId);
     makeApiCall(product_id);
   }, []);
+
+  const onTextLayout = useCallback((e : any) => {
+    console.log(e.nativeEvent.lines.length);
+  }, []);
   return (
     <>
       <CustomHeader
-        title={'Property Info'}
-        color={white}
+        title={'About App'}
         source={back}
-        navigation={() => navigation.navigate('InfoApp')}
+        onBackPress={() => navigation.goBack()}
+        onBack={back}
       />
-      <SafeAreaView style={styles.container}>
+      <View style={styles.container}>
         <View style={styles.mainContainer}>
           {loader ? (
-            <ActivityIndicator size="large" color={grey} />
+            <View style={styles.center}>
+              <ActivityIndicator size="large" color={teal} />
+            </View>
           ) : (
             <>
               <View>
@@ -263,7 +280,7 @@ const ProductInfo = ({route, navigation}: any) => {
                 />
                 <View style={styles.paginationContainerView}>
                   <PaginationDot
-                    activeDotColor={blue}
+                    activeDotColor={'#303030'}
                     curPage={activeSlide}
                     maxPage={30}
                   />
@@ -273,7 +290,9 @@ const ProductInfo = ({route, navigation}: any) => {
                 <TouchableOpacity
                   style={styles.underline}
                   onPress={() => goToWebView(product.mortgage.rates_url)}>
-                  <Text>Get A Home Mortgage Pre-Approval Today</Text>
+                  <Text style={styles.mortgageTxt}>
+                    Get A Home Mortgage Pre-Approval by today
+                  </Text>
                 </TouchableOpacity>
                 <View style={styles.typeView}>
                   <View
@@ -300,7 +319,23 @@ const ProductInfo = ({route, navigation}: any) => {
                     <Text style={styles.houseType}>House for sale</Text>
                   )}
                 </View>
-                <Text style={styles.priceText}>${product.list_price}</Text>
+                <View style={styles.addressView}>
+                  <Image source={locationIcon} />
+                  <Text style={styles.address}>
+                    {product.location.address.line}{' '}
+                    {product.location.address.street_number}{' '}
+                    {product.location.address.street_name}{' '}
+                    {product.location.address.street_suffix}{' '}
+                    {product.location.address.city}{' '}
+                    {product.location.address.state}
+                  </Text>
+                </View>
+                <View style={styles.row}>
+                  <Text style={styles.priceText}>${product.list_price}</Text>
+                  <TouchableOpacity onPress={() => shareLink(product.href)}>
+                    <Image source={shareIcon} />
+                  </TouchableOpacity>
+                </View>
                 <View style={styles.homeDesc}>
                   {product.description.beds && (
                     <View style={styles.horizontal}>
@@ -328,64 +363,47 @@ const ProductInfo = ({route, navigation}: any) => {
                       <Text style={styles.headingTxt}>sqft</Text>
                     </View>
                   )}
-
-                  {product.description.lot_sqft && (
-                    <View style={styles.horizontal}>
-                      <Text style={styles.data}>
-                        {product.description.lot_sqft}
-                      </Text>
-                      <Text style={styles.headingTxt}>sqft lot</Text>
-                    </View>
-                  )}
-                </View>
-                <View style={styles.row}>
-                  <View>
-                    <Image source={built} />
+                  <View style={styles.horizontal}>
                     <Text>{product.description.year_built}</Text>
+                    <Image source={built} />
                   </View>
-                  <Text style={styles.address}>
-                    {product.location.address.line}{' '}
-                    {product.location.address.street_number}{' '}
-                    {product.location.address.street_name}{' '}
-                    {product.location.address.street_suffix}{' '}
-                    {product.location.address.city}{' '}
-                    {product.location.address.state}
-                  </Text>
                 </View>
-
-                <Text style={styles.different_View}>
-                  Diffrent Views of Area
-                </Text>
-                <FlatList data={DATA} renderItem={renderItem} numColumns={2} />
+                <Text style={styles.different_View}>Description</Text>
+                <View style={styles.description_View}>
+                  <Text
+                    style={styles.descriptionTxt}
+                    onTextLayout={onTextLayout}>
+                    {product.description.text}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() =>
+                      navigation.navigate('About', {data: product})
+                    }>
+                    <Text style={styles.readMore}>...Read More</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </>
           )}
         </View>
-        <View style={styles.bottom}>
-          <View style={styles.button}>
-            <TouchableOpacity
-              onPress={() => shareLink(product.href)}
-              style={styles.share_View}>
-              <Text>Share this home</Text>
-              <Image source={shareIcon} />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => navigation.navigate('About', {data: product})}
-              style={styles.share_View}>
-              <Text>About this house</Text>
-              <Image source={infoIcon} />
-            </TouchableOpacity>
-          </View>
+      </View>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modal}
+        onRequestClose={() => {
+          setModal(false);
+        }}>
+        <View style={styles.list}>
+          <FlatList data={DATA} renderItem={renderItem} numColumns={2} />
         </View>
-      </SafeAreaView>
+      </Modal>
     </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: backgroundColor,
   },
   image: {
@@ -402,7 +420,7 @@ const styles = StyleSheet.create({
   },
   mainContainer: {
     marginHorizontal: Scale(20),
-    marginTop: Scale(20),
+    marginTop: Scale(15),
   },
   text: {
     color: 'white',
@@ -410,17 +428,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   textView: {
-    borderRadius: Scale(10),
-    paddingVertical: Scale(2),
-    paddingHorizontal: Scale(5),
     position: 'absolute',
     top: 10,
     left: 10,
-    backgroundColor: blue,
   },
   typeView: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: Scale(10),
   },
   circleYellow: {
     width: Scale(10),
@@ -441,7 +456,7 @@ const styles = StyleSheet.create({
     fontFamily: 'sans-serif',
     fontSize: Scale(14),
     fontWeight: '800',
-    marginTop: Scale(5),
+    marginVertical: Scale(5),
   },
   homeDesc: {
     flexDirection: 'row',
@@ -454,21 +469,26 @@ const styles = StyleSheet.create({
     fontSize: Scale(12),
     fontWeight: '500',
     marginTop: Scale(5),
+    marginRight: Scale(2),
   },
   headingTxt: {
     marginTop: Scale(3),
     marginLeft: Scale(3),
-    color: headingTxt,
+    color: '#101010',
   },
   horizontal: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#E0E0E0',
+    paddingVertical: Scale(5),
+    paddingHorizontal: Scale(10),
+    borderRadius: Scale(10),
   },
   underline: {
-    borderBottomColor: black,
-    borderBottomWidth: StyleSheet.hairlineWidth,
     marginBottom: Scale(10),
-    width: itemWidth * 0.7,
+    width: itemWidth * 0.8,
+    textAlign: 'center',
+    marginTop: Scale(10),
   },
   share_View: {
     backgroundColor: grey,
@@ -516,7 +536,6 @@ const styles = StyleSheet.create({
     fontFamily: 'sans-serif',
     fontWeight: '700',
     fontSize: Scale(15),
-    textAlign: 'center',
     marginTop: Scale(15),
   },
   button: {
@@ -530,10 +549,52 @@ const styles = StyleSheet.create({
     marginHorizontal: Scale(25),
   },
   heartIcon: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'flex-end',
-    alignItems: 'flex-end',
-    padding: 16,
+    alignSelf: 'flex-end',
+    position: 'absolute',
+    bottom: Scale(15),
+    right: Scale(20),
+    marginStart: Scale(15),
+  },
+  center: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
+  },
+  addressView: {
+    justifyContent: 'space-between',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginVertical: Scale(10),
+    backgroundColor: light_grey,
+    paddingVertical: Scale(8),
+    borderRadius: Scale(10),
+    paddingHorizontal: Scale(5),
+  },
+  mortgageTxt: {
+    color: '#0000FF',
+  },
+  descriptionTxt: {
+    color: shadowColor,
+    fontSize: Scale(12),
+  },
+  description_View: {
+    height: screenHeight * 0.12,
+    marginTop: Scale(5),
+  },
+  list: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: Scale(20),
+    position: 'absolute',
+    bottom: 0,
+    backgroundColor: light_grey,
+    paddingBottom: Scale(15),
+    borderTopEndRadius: Scale(20),
+    borderTopLeftRadius: Scale(20),
+  },
+  readMore: {
+    fontSize: Scale(12),
+    color: '#0000FF',
   },
 });
 

@@ -1,12 +1,13 @@
-
-export const primaryColor = '#FFFFFF'
-export const shadowColor = '#808080'
-export const backgroundColor = '#F4F4F4'
-export const grey = 'grey'
-export const blue = 'blue'
-export const yellow = '#FFA500'
-export const black = '#000'
-export const text = '#3CB043'
-export const headingTxt = '#E34234'
-export const white = '#F0F0F0'
-export const teal = '#008080'
+export const primaryColor = '#FFFFFF';
+export const shadowColor = '#808080';
+export const backgroundColor = '#F4F4F4';
+export const grey = 'grey';
+export const blue = 'blue';
+export const yellow = '#FFA500';
+export const black = '#000';
+export const text = '#3CB043';
+export const headingTxt = '#E34234';
+export const white = '#F0F0F0';
+export const teal = '#008080';
+export const light_grey = '#B0B0B0';
+export const lightest_grey = '#D0D0D0';
