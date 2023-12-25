@@ -22,6 +22,7 @@ import {
   headingTxt,
   primaryColor,
   shadowColor,
+  teal,
   yellow,
 } from './Colors';
 import {back, bathroomIcon, bedIcon, heartIcon, redHeartIcon} from './assests';
@@ -235,7 +236,7 @@ const productList = ({navigation}: any) => {
       </View>
       <SafeAreaView style={styles.container}>
         {postData.length === 0 ? (
-          <ActivityIndicator size="large" color={primaryColor} />
+          <ActivityIndicator size="large" color={teal} />
         ) : (
           <View style={styles.top}>
             <FlatList
